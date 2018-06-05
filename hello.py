@@ -1,3 +1,25 @@
+"""
+Flask server that pushes
+
+Weight sensor (HX711)
+IR LEDs with ADC
+Microphone
+Speaker
+LCD Display
+UltraSonic sensor
+
+
+Get speaker set up: ORDERING SPEAKER SO DONE
+NICE TO HAVE: Learn how to do voice recognition with the usb microphone (https://maker.pro/raspberry-pi/tutorial/the-best-voice-recognition-software-for-raspberry-pi)
+Create a get_weight(bin) function # Gets the weight of a specified bin
+Create a get_height(bin) function # Gets the height of a specified bin
+LCD Display setup / make sure it works with the pi / get it to work EZ(?)
+NICE TO HAVE: Motion Sensor, get it to work
+No interruption
+
+"""
+
+
 from flask import Flask, send_from_directory, render_template
 from flask_socketio import SocketIO, emit
 import eventlet
@@ -6,6 +28,8 @@ import random
 eventlet.monkey_patch()
 import time
 import RPIO
+from copy import deepcopy
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -15,6 +39,10 @@ devices = []
 # TODO: CHANGE THIS TO A REASONABLE PIN
 ir_led_pin = 10
 ir_thresh = 100
+PAPER_PIN = 12
+PLASTIC_PIN = 13
+METAL_PIN = 14
+bins = {"paper":PAPER_PIN,"plastic":PLASTIC_PIN,"metal":METAL_PIN}
 
 
 RPIO.setup(ir_led_pin, RPIO.IN)
@@ -32,8 +60,8 @@ class Device:
             return self.check_function(*self.function_args)
 
 def get_pin_value(pin):
-    value = RPIO.input(ir_led_pin)
-    return value
+    # value = RPIO.input(ir_led_pin)
+    # return value
     return random.random() * 103
 
 def check_ir(pin):
@@ -57,15 +85,30 @@ def check_sensors():
             output[device.device_type] = result
     return output
 
+def get_weight(bin_pin):
+    """
+    Returns the weight for a specified bin_pin, where the bin_pin is the pin associated
+    with a bin's weight sensor
+    """
+    
+
+
 def background_thread():
+
+    old_output = check_sensors()
     while True:
         # This point in the code will monitor the thing
         output = check_sensors()
-        if len(output.keys()) != 0:
+        # if len(output.keys()) != 0:
+        if output != old_output:
+            message = {}
             for sensor in output.keys():
-                socketio.emit('message', output)
-                print("Emmitted the thing")
-                time.sleep(2)
+                if output[sensor] != old_output[sensor]:
+                    message[sensor] = output[sensor]
+            socketio.emit('message', output)
+            print("Emmitted the thing")
+            time.sleep(2)
+        old_output = deepcopy(output)
 
 @app.route('/')
 def hello_world():
