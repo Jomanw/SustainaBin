@@ -19,22 +19,27 @@ No interruption
 
 """
 
-
+### IMPORTS
 from flask import Flask, send_from_directory, render_template
 from flask_socketio import SocketIO, emit
 import eventlet
-import random
-# Lol what
 eventlet.monkey_patch()
-import time
-import RPIO
 from copy import deepcopy
+import random
+import time
+
+# Import SPI library (for hardware SPI) and MCP3008 library.
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_MCP3008
+# Lol what
 
 
+### DEFINE THE FLASK APP
 app = Flask(__name__)
 socketio = SocketIO(app)
 thread = None
 
+###
 devices = []
 # TODO: CHANGE THIS TO A REASONABLE PIN
 ir_led_pin = 10
@@ -45,7 +50,7 @@ METAL_PIN = 14
 bins = {"paper":PAPER_PIN,"plastic":PLASTIC_PIN,"metal":METAL_PIN}
 
 
-RPIO.setup(ir_led_pin, RPIO.IN)
+# RPIO.setup(ir_led_pin, RPIO.IN)
 
 class Device:
     def __init__(self, device_type, check_function, function_args = None):
@@ -90,7 +95,7 @@ def get_weight(bin_pin):
     Returns the weight for a specified bin_pin, where the bin_pin is the pin associated
     with a bin's weight sensor
     """
-    
+
 
 
 def background_thread():
