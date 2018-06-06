@@ -1,22 +1,4 @@
 """
-Flask server that pushes
-
-Weight sensor (HX711)
-IR LEDs with ADC
-Microphone
-Speaker
-LCD Display
-UltraSonic sensor
-
-
-Get speaker set up: ORDERING SPEAKER SO DONE
-NICE TO HAVE: Learn how to do voice recognition with the usb microphone (https://maker.pro/raspberry-pi/tutorial/the-best-voice-recognition-software-for-raspberry-pi)
-Create a get_weight(bin) function # Gets the weight of a specified bin
-Create a get_height(bin) function # Gets the height of a specified bin
-LCD Display setup / make sure it works with the pi / get it to work EZ(?)
-NICE TO HAVE: Motion Sensor, get it to work
-No interruption
-
 
 
 
@@ -31,6 +13,8 @@ eventlet.monkey_patch()
 from copy import deepcopy
 import random
 import time
+import cv2
+import numpy as np
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
 is_pi = False
@@ -54,23 +38,6 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 thread = None
 
-###
-devices = []
-# TODO: CHANGE THIS TO A REASONABLE PIN
-# ir_led_pin = 10
-# ir_thresh = 100
-# PAPER_WEIGHT_PIN = 12
-# PLASTIC_WEIGHT_PIN = 13
-# METAL_WEIGHT_PIN = 14
-#
-# PAPER_ADC_PIN = 15
-# PLASTIC_ADC_PIN = 16
-# METAL_ADC_PIN = 17
-#
-# bins_weight = {"paper":PAPER_WEIGHT_PIN,"plastic":PLASTIC_WEIGHT_PIN,"metal":METAL_WEIGHT_PIN}
-# bins_adc = {"paper":PAPER_ADC_PIN,"plastic":PLASTIC_ADC_PIN,"metal":METAL_ADC_PIN}
-
-# Define pins being used for both plastic and paper IR LED's
 PAPER_ADC_PIN = 0
 PLASTIC_ADC_PIN = 1
 IR_THRESHOLD = 500
@@ -78,43 +45,17 @@ IR_THRESHOLD = 500
 IMAGE_FILENAME = "bin.jpg"
 
 
-# class Device:
-#     def __init__(self, device_type, check_function, function_args = None):
-#         self.device_type = device_type
-#         self.check_function = check_function
-#         self.function_args = function_args
-#
-#     def check(self):
-#         if self.function_args == None:
-#             return self.check_function()
-#         else:
-#             return self.check_function(*self.function_args)
-#
-# def get_pin_value(pin):
-#     # value = RPIO.input(ir_led_pin)
-#     # return value
-#     return random.random() * 103
-#
-# def check_ir(pin):
-#     """
-#     Returns true if something is obstructing the sensor, false otherwise
-#     """
-#     value = get_pin_value(pin)
-#     if value > ir_thresh:
-#         return value
-#     else:
-#         return False
-#
-# ir_receiver = Device("ir_led",check_ir,[ir_led_pin])
-# devices.append(ir_receiver)
-#
-# def check_sensors():
-#     output = {}
-#     for device in devices:
-#         result = device.check()
-#         if result != False:
-#             output[device.device_type] = result
-#     return output
+PLASTIC_START_POINT = [0,0]
+PLASTIC_END_POINT = [1000,1000]
+
+PAPER_START_POINT = [0,1000]
+PAPER_END_POINT = [1000,2000]
+
+
+
+
+
+
 
 def check_bins():
     """
@@ -123,21 +64,9 @@ def check_bins():
     plastic_result = mcp.read_adc(PLASTIC_ADC_PIN) > IR_THRESHOLD
     paper_result = mcp.read_adc(PAPER_ADC_PIN) > IR_THRESHOLD
     return {
-    PLASTIC_ADC_PIN: plastic_result ,
+    PLASTIC_ADC_PIN: plastic_result,
     PAPER_ADC_PIN:paper_result
     }
-
-
-# def check_bins():
-#
-#     output = {}
-#     pin_values = get_pin_values()
-#     for pin in pin_values.keys():
-#         value = False
-#         if pin_values[pin] > IR_THRESHOLD:
-#             value = True
-#         output[pin] = value
-#     return output
 
 def get_weight(bin_pin):
     """
@@ -145,22 +74,44 @@ def get_weight(bin_pin):
     with a bin's weight sensor
     """
 
-def run_classifier(bin_type):
-    pass
+
+def get_average_pixel(img):
+    avg_color_per_row = numpy.average(img, axis=0)
+    avg_color = numpy.average(avg_color_per_row, axis=0)
+    return avg_color
+
+def run_plastic_classifier():
+    # Get only the relevant points
+    x_o = PLASTIC_START_POINT[0]
+    y_o = PLASTIC_START_POINT[1]
+    x_f = PLASTIC_END_POINT[0]
+    y_f = PLASTIC_END_POINT[1]
+    img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
+    average_pixel = get_average_pixel(img)
+
+
+def run_paper_classifier():
+    # Get only the relevant points
+    x_o = PAPER_START_POINT[0]
+    y_o = PAPER_START_POINT[1]
+    x_f = PAPER_END_POINT[0]
+    y_f = PAPER_END_POINT[1]
+    img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
+    average_pixel = get_average_pixel(img)
+
 
 def classify_bin(bin_type):
     if bin_type == "PLASTIC":
         "plastic section; just look at the plastic side"
         if always_correct:
             return "PLASTIC"
+        else:
+            return run_plastic_classifier(bin_type)
 
     else: # which means that bin_type == "PAPER"
         "paper section; just look at the paper side"
         if always_correct:
             return "PAPER"
-
-
-
 
 
 def background_thread():
@@ -187,47 +138,20 @@ def background_thread():
             "correct":classification,
             "thrown":thrown
             }
-            # if bin_status[PAPER_ADC_PIN]:
-            #     # If something is thrown into the paper bin:
-            #     plastic = False
-            #     classification = classify_bin("PAPER")
-            #     output = {
-            #     "correct":classification,
-            #     "thrown":"PAPER"
-            #     }
-            #
-            # elif bin_status[PLASTIC_ADC_PIN]:
-            #     # If something is thrown into the plastic bin:
-            #     plastic = True
-            #     classification = classify_bin("PLASTIC")
-            #     correct = classification == "PLASTIC"
             socketio.emit('message', output)
             time.sleep(1)
 
-        #
-        #
-        # if output != old_output:
-        #     message = {}
-        #     for sensor in output.keys():
-        #         if output[sensor] != old_output[sensor]:
-        #             message[sensor] = output[sensor]
-        #
-        #     print("Emmitted the thing")
-        #     time.sleep(2)
-        # old_output = deepcopy(output)
-
 @app.route('/')
 def hello_world():
-    # newFile = open("content.html", "rb")
+    # Give them the main page, created by Billy
     return render_template("content.html")
-    # return 'Hello, World!'
 
 @app.route('/startdemo')
 def startdemo():
     '''
     Used for starting the hardcoded demo
     '''
-
+    # Give the demo page
     return render_template("demo.html")
 
 @app.route('/demo')
@@ -237,8 +161,6 @@ def do_demo_from_phone():
     thrown: "PAPER" or "PLASTIC"
     correct: "TRUE" or "FALSE"
     '''
-    # thrown = request.args.get("thrown")
-    # correct = request.args.get("correct")
     results = request.args.get("result").split("_")
     thrown = results[0]
     correct = results[1]
