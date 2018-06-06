@@ -1,0 +1,36 @@
+
+<html>
+<head>
+      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+      <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script> -->
+      <script type="text/javascript" charset="utf-8">
+            // var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var socket = io.connect();
+            socket.on('connect', function() {
+                 console.log('connected');
+                 document.getElementById("demo").innerHTML = "hhhhhhh";
+            });
+            socket.on('message', function(data) {
+                 // console.log(data);
+                 console.log(data.ir_led)
+                 document.getElementById("demo").innerHTML = data.ir_led;
+            });
+      </script>
+</head>
+<body>
+
+  <p id="demo">
+
+    nothing yet
+
+  </p>
+  <form action="/demo">
+    <input type="radio" name="result" value="PLASTIC_TRUE" checked> Plastic Correct<br>
+    <input type="radio" name="result" value="PLASTIC_FALSE"> Plastic Incorrect<br>
+    <input type="radio" name="result" value="PAPER_TRUE"> Paper Correct<br>
+    <input type="radio" name="result" value="PAPER_FALSE"> Paper Incorrect<br>
+    <input type="submit" value="Submit">
+  </form>
+
+</body>
+</html>
