@@ -59,5 +59,7 @@ def run_paper_classifier():
     img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
     average_pixel = get_average_pixel(img)
 
-
+camera.start_preview()
+time.sleep(10)
 camera.capture(IMAGE_FILENAME)
+camera.stop_preview()
