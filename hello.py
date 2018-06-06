@@ -33,15 +33,19 @@ import random
 import time
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_MCP3008
+is_pi = False
+if is_pi:
+    import Adafruit_GPIO.SPI as SPI
+    import Adafruit_MCP3008
+    CLK  = 18
+    MISO = 23
+    MOSI = 24
+    CS   = 25
+    mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
 
-
-using_camera = False
-if using_camera:
     import picamera
     camera = picamera.PiCamera()
-# camera.capture(filename) captures an image from the picamera, and puts the result into filename
+    # camera.capture(filename) captures an image from the picamera, and puts the result into filename
 
 ### DEFINE THE FLASK APP
 app = Flask(__name__)
@@ -65,8 +69,8 @@ devices = []
 # bins_adc = {"paper":PAPER_ADC_PIN,"plastic":PLASTIC_ADC_PIN,"metal":METAL_ADC_PIN}
 
 # Define pins being used for both plastic and paper IR LED's
-PAPER_BIN_PIN = 12
-PLASTIC_BIN_PIN = 13
+PAPER_ADC_PIN = 0
+PLASTIC_ADC_PIN = 1
 IR_THRESHOLD = 500
 
 IMAGE_FILENAME = "bin.jpg"
@@ -110,28 +114,28 @@ IMAGE_FILENAME = "bin.jpg"
 #             output[device.device_type] = result
 #     return output
 
-def get_pin_values():
-    # Will read the sensor values of each pin, and return it as a dictionary.
-    # Format will be {PLASTIC_BIN_PIN:value, PAPER_BIN_PIN:value}
-    return {
-    PLASTIC_BIN_PIN: 600,
-    PAPER_BIN_PIN:400
-    }
-    pass
-
-
 def check_bins():
     """
     Returns a dict indicating true if a bin was found to have something currently being thrown into it
     """
-    output = {}
-    pin_values = get_pin_values()
-    for pin in pin_values.keys():
-        value = False
-        if pin_values[pin] > IR_THRESHOLD:
-            value = True
-        output[pin] = value
-    return output
+    plastic_result = mcp.read_adc(PLASTIC_ADC_PIN) > IR_THRESHOLD
+    paper_result = mcp.read_adc(PAPER_ADC_PIN) > IR_THRESHOLD
+    return {
+    PLASTIC_ADC_PIN: plastic_result ,
+    PAPER_ADC_PIN:paper_result
+    }
+
+
+# def check_bins():
+#
+#     output = {}
+#     pin_values = get_pin_values()
+#     for pin in pin_values.keys():
+#         value = False
+#         if pin_values[pin] > IR_THRESHOLD:
+#             value = True
+#         output[pin] = value
+#     return output
 
 def get_weight(bin_pin):
     """
@@ -146,7 +150,7 @@ def classify_bin(bin_type):
     if bin_type == "PLASTIC":
         "plastic section; just look at the plastic side"
         pass
-    else:
+    else: # which means that bin_type == "PAPER"
         "paper section; just look at the paper side"
         pass
 
@@ -156,21 +160,56 @@ def classify_bin(bin_type):
 
 def background_thread():
 
-    old_output = check_sensors()
+    # old_output = check_bins()
     while True:
         # This point in the code will monitor the thing
-        output = check_sensors()
+        bin_status = check_bins()
         # Actually, now we just need to monitor the two sensors and take a picture when one of them is tripped
         # if len(output.keys()) != 0:
-        if output != old_output:
-            message = {}
-            for sensor in output.keys():
-                if output[sensor] != old_output[sensor]:
-                    message[sensor] = output[sensor]
+
+        if True in bin_status.values():
+            correct = True
+            if is_pi:
+                camera.capture(IMAGE_FILENAME)
+
+            # Message to return to the webpage
+            if bin_status[PAPER_ADC_PIN]:
+                thrown = 'PAPER'
+            elif bin_status[PLASTIC_ADC_PIN]:
+                thrown = "PLASTIC"
+            classification = classify_bin(thrown)
+            output = {
+            "correct":classification,
+            "thrown":thrown
+            }
+            # if bin_status[PAPER_ADC_PIN]:
+            #     # If something is thrown into the paper bin:
+            #     plastic = False
+            #     classification = classify_bin("PAPER")
+            #     output = {
+            #     "correct":classification,
+            #     "thrown":"PAPER"
+            #     }
+            #
+            # elif bin_status[PLASTIC_ADC_PIN]:
+            #     # If something is thrown into the plastic bin:
+            #     plastic = True
+            #     classification = classify_bin("PLASTIC")
+            #     correct = classification == "PLASTIC"
             socketio.emit('message', output)
-            print("Emmitted the thing")
-            time.sleep(2)
-        old_output = deepcopy(output)
+            time.sleep(1)
+
+        #
+        #
+        # if output != old_output:
+        #     message = {}
+        #     for sensor in output.keys():
+        #         if output[sensor] != old_output[sensor]:
+        #             message[sensor] = output[sensor]
+        #
+        #     print("Emmitted the thing")
+        #     time.sleep(2)
+        # old_output = deepcopy(output)
 
 @app.route('/')
 def hello_world():
