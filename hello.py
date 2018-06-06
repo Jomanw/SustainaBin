@@ -34,6 +34,8 @@ import time
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
 is_pi = False
+always_correct = True
+
 if is_pi:
     import Adafruit_GPIO.SPI as SPI
     import Adafruit_MCP3008
@@ -149,10 +151,13 @@ def run_classifier(bin_type):
 def classify_bin(bin_type):
     if bin_type == "PLASTIC":
         "plastic section; just look at the plastic side"
-        pass
+        if always_correct:
+            return "PLASTIC"
+
     else: # which means that bin_type == "PAPER"
         "paper section; just look at the paper side"
-        pass
+        if always_correct:
+            return "PAPER"
 
 
 
