@@ -140,7 +140,7 @@ def get_weight(bin_pin):
     """
 
 def run_classifier(bin_type):
-
+    pass
 
 def classify_bin(bin_type):
     if bin_type == "PLASTIC":
@@ -183,7 +183,7 @@ def startdemo():
     '''
     Used for starting the hardcoded demo
     '''
-    print
+
     return render_template("demo.html")
 
 @app.route('/demo')
