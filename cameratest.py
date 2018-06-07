@@ -66,4 +66,7 @@ def run_paper_classifier():
 camera.capture(IMAGE_FILENAME)
 
 img = Image.open(IMAGE_FILENAME)
+cropped_plastic = img.crop(PLASTIC_TUPLE)
+cropped_paper = img.crop(PAPER_TUPLE)
 
+cropped_plastic.show()
