@@ -65,5 +65,3 @@ camera.capture(IMAGE_FILENAME)
 camera.stop_preview()
 
 img = Image.open(IMAGE_FILENAME)
-pix_val = list(img.getdata())
-print(pix_val)
