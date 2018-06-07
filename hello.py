@@ -52,11 +52,26 @@ PLASTIC_END_POINT = [1000,1000]
 PAPER_START_POINT = [0,1000]
 PAPER_END_POINT = [1000,2000]
 
+PLASTIC_TUPLE = (PLASTIC_START_POINT[0],PLASTIC_START_POINT[1],PLASTIC_END_POINT[0],PLASTIC_END_POINT[1])
+PAPER_TUPLE = (PAPER_START_POINT[0],PAPER_START_POINT[1],PAPER_END_POINT[0],PAPER_END_POINT[1])
 
 
+def get_image(bin_type):
+    img = Image.open(IMAGE_FILENAME)
+    if bin_type == "PLASTIC":
+        return img.crop(PLASTIC_TUPLE)
+    else:
+        return img.crop(PAPER_TUPLE)
 
+def get_plastic_image():
+    # Assumes img is a PIL image, that has been opened
+    img = Image.open(IMAGE_FILENAME)
+    return img.crop(PLASTIC_TUPLE)
 
-
+def get_paper_image():
+    # Assumes img is a PIL image, that has been opened
+    img = Image.open(IMAGE_FILENAME)
+    return img.crop(PAPER_TUPLE)
 
 def check_bins():
     """
@@ -68,6 +83,9 @@ def check_bins():
     PLASTIC_ADC_PIN: plastic_result,
     PAPER_ADC_PIN:paper_result
     }
+
+def get_dominant_color(img):
+    
 
 def get_weight(bin_pin):
     """
@@ -87,6 +105,9 @@ def run_plastic_classifier():
     y_o = PLASTIC_START_POINT[1]
     x_f = PLASTIC_END_POINT[0]
     y_f = PLASTIC_END_POINT[1]
+
+    img = get_image("PLASTIC")
+    if
     # img = skimage.io.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
     # average_pixel = get_average_pixel(img)
 
@@ -140,7 +161,7 @@ def background_thread():
             "thrown":thrown
             }
             socketio.emit('throwingAttempt', output)
-            time.sleep(1)
+            time.sleep(2)
 
 @app.route('/')
 def hello_world():
