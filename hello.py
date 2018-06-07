@@ -13,8 +13,9 @@ eventlet.monkey_patch()
 from copy import deepcopy
 import random
 import time
-import numpy as np
 import skimage
+import numpy as np
+
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
 is_pi = False
