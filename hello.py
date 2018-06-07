@@ -13,8 +13,8 @@ eventlet.monkey_patch()
 from copy import deepcopy
 import random
 import time
-import cv2
 import numpy as np
+import skimage
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
 is_pi = False
@@ -86,7 +86,7 @@ def run_plastic_classifier():
     y_o = PLASTIC_START_POINT[1]
     x_f = PLASTIC_END_POINT[0]
     y_f = PLASTIC_END_POINT[1]
-    img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
+    img = skimage.io.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
     average_pixel = get_average_pixel(img)
 
 
@@ -96,7 +96,7 @@ def run_paper_classifier():
     y_o = PAPER_START_POINT[1]
     x_f = PAPER_END_POINT[0]
     y_f = PAPER_END_POINT[1]
-    img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
+    img = skimage.io.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
     average_pixel = get_average_pixel(img)
 
 
