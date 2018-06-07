@@ -179,4 +179,4 @@ def connect():
         thread = socketio.start_background_task(target = background_thread)
 
 if __name__ == "__main__":
-    socketio.run(app, debug = True)
+    socketio.run(app, debug = True, port = 22)
