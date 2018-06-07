@@ -24,7 +24,7 @@ import random
 import time
 # import cv2
 # import numpy as np
-
+from PIL import Image
 
 PLASTIC_START_POINT = [0,0]
 PLASTIC_END_POINT = [1000,1000]
@@ -60,6 +60,10 @@ def run_paper_classifier():
     average_pixel = get_average_pixel(img)
 
 camera.start_preview()
-time.sleep(10)
+time.sleep(5)
 camera.capture(IMAGE_FILENAME)
 camera.stop_preview()
+
+img = Image.open(IMAGE_FILENAME)
+pix_val = list(img.getdata())
+print(pix_val)
