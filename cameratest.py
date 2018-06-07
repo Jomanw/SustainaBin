@@ -1,8 +1,8 @@
 """
 Script for playing with the picamera and opencv
 """
-import cv2
-import numpy as np
+# import cv2
+# import numpy as np
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 CLK  = 18
@@ -22,8 +22,8 @@ eventlet.monkey_patch()
 from copy import deepcopy
 import random
 import time
-import cv2
-import numpy as np
+# import cv2
+# import numpy as np
 
 
 PLASTIC_START_POINT = [0,0]
