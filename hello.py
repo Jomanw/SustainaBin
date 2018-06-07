@@ -18,7 +18,7 @@ import numpy as np
 
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
-is_pi = False
+is_pi = True
 always_correct = True
 
 if is_pi:
@@ -179,4 +179,4 @@ def connect():
         thread = socketio.start_background_task(target = background_thread)
 
 if __name__ == "__main__":
-    socketio.run(app, debug = True, port = 22)
+    socketio.run(app, debug = True, port = 5000)
