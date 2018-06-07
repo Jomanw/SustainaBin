@@ -10,7 +10,7 @@
                  console.log('connected');
                  document.getElementById("demo").innerHTML = "hhhhhhh";
             });
-            socket.on('message', function(data) {
+            socket.on('throwingAttempt', function(data) {
                  // console.log(data);
                  console.log(data.ir_led)
                  document.getElementById("demo").innerHTML = data.ir_led;

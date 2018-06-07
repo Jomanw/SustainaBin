@@ -139,7 +139,7 @@ def background_thread():
             "correct":classification,
             "thrown":thrown
             }
-            socketio.emit('message', output)
+            socketio.emit('throwingAttempt', output)
             time.sleep(1)
 
 @app.route('/')
@@ -169,7 +169,7 @@ def do_demo_from_phone():
     "thrown":thrown,
     "correct":correct
     }
-    socketio.emit("message",message)
+    socketio.emit("throwingAttempt",message)
     return render_template("demo.html")
 
 @socketio.on("connect")
