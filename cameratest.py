@@ -3,13 +3,13 @@ Script for playing with the picamera and opencv
 """
 # import cv2
 # import numpy as np
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_MCP3008
+# import Adafruit_GPIO.SPI as SPI
+# import Adafruit_MCP3008
 CLK  = 18
 MISO = 23
 MOSI = 24
 CS   = 25
-mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
+# mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
 
 import picamera
 camera = picamera.PiCamera()
@@ -62,11 +62,13 @@ def run_paper_classifier():
     img = cv2.imread(IMAGE_FILENAME)[x_o:x:f,y_o:y_f]
     average_pixel = get_average_pixel(img)
 
-
+print("About to capture")
 camera.capture(IMAGE_FILENAME)
-
+print("Image Captured")
 img = Image.open(IMAGE_FILENAME)
+print("Opened Image")
 cropped_plastic = img.crop(PLASTIC_TUPLE)
 cropped_paper = img.crop(PAPER_TUPLE)
-
+print("Cropped Images")
 cropped_plastic.show()
+print("Showed Image")
