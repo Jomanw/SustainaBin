@@ -15,7 +15,7 @@ import random
 import time
 # import skimage
 import numpy as np
-
+from PIL import Image
 
 # Import SPI library (for hardware SPI) and MCP3008 library.
 is_pi = False
