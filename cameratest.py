@@ -13,12 +13,13 @@ CS   = 25
 
 import picamera
 camera = picamera.PiCamera()
-
-from flask import Flask, send_from_directory, render_template, request
-from flask_socketio import SocketIO, emit
-import eventlet
+print("Imported Camera")
+#from flask import Flask, send_from_directory, render_template, request
+#from flask_socketio import SocketIO, emit
+#import eventlet
+import os
 # Lol what
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
 from copy import deepcopy
 import random
 import time
@@ -26,11 +27,11 @@ import time
 # import numpy as np
 from PIL import Image
 
-PLASTIC_START_POINT = [0,0]
-PLASTIC_END_POINT = [1000,1000]
+PLASTIC_START_POINT = [20,20]
+PLASTIC_END_POINT = [400,400]
 
-PAPER_START_POINT = [0,1000]
-PAPER_END_POINT = [1000,2000]
+PAPER_START_POINT = [0,200]
+PAPER_END_POINT = [200,400]
 
 PLASTIC_TUPLE = (PLASTIC_START_POINT[0],PLASTIC_START_POINT[1],PLASTIC_END_POINT[0],PLASTIC_END_POINT[1])
 PAPER_TUPLE = (PAPER_START_POINT[0],PAPER_START_POINT[1],PAPER_END_POINT[0],PAPER_END_POINT[1])
@@ -63,12 +64,12 @@ def run_paper_classifier():
     average_pixel = get_average_pixel(img)
 
 print("About to capture")
-camera.capture(IMAGE_FILENAME)
+camera.capture("2" + IMAGE_FILENAME)
 print("Image Captured")
 img = Image.open(IMAGE_FILENAME)
 print("Opened Image")
 cropped_plastic = img.crop(PLASTIC_TUPLE)
 cropped_paper = img.crop(PAPER_TUPLE)
 print("Cropped Images")
-cropped_plastic.show()
+cropped_plastic.save("newfile.jpg")
 print("Showed Image")
