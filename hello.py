@@ -85,7 +85,8 @@ def check_bins():
     }
 
 def get_dominant_color(img):
-    
+    loaded = img.load()
+    row_maxes = max()
 
 def get_weight(bin_pin):
     """
